@@ -1,0 +1,969 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Inventario IT</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#f0f2f5; --surface:#fff; --s2:#f8f9fb; --s3:#f0f2f5;
+  --border:#e2e6ed; --border2:#c8cdd8;
+  --text:#171b26; --sub:#5c6170; --muted:#9299a8;
+  --blue:#2563eb; --blue-l:#eff4ff; --blue-d:#1d4ed8;
+  --green:#15803d; --green-l:#f0fdf4;
+  --amber:#b45309; --amber-l:#fffbeb;
+  --red:#dc2626;   --red-l:#fef2f2;
+  --purple:#7c3aed;--purple-l:#f5f3ff;
+  --teal:#0f766e;  --teal-l:#f0fdfa;
+  --orange:#c2410c;--orange-l:#fff7ed;
+  --cyan:#0e7490;  --cyan-l:#ecfeff;
+  --pink:#be185d;  --pink-l:#fdf2f8;
+  --font:'DM Sans',sans-serif;
+  --mono:'DM Mono',monospace;
+  --r:6px; --r2:10px; --r3:14px;
+  --sh:0 1px 3px rgba(0,0,0,.07),0 1px 2px rgba(0,0,0,.04);
+  --sh2:0 8px 24px rgba(0,0,0,.12);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
+
+/* ── Shell ── */
+.shell{display:flex;height:100vh;overflow:hidden}
+.aside{width:232px;flex-shrink:0;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow-y:auto}
+.main-col{flex:1;display:flex;flex-direction:column;min-width:0;overflow:hidden}
+.scroll-area{flex:1;overflow-y:auto;padding:22px 24px}
+
+/* ── Sidebar ── */
+.brand{display:flex;align-items:center;gap:10px;padding:15px 14px 13px;border-bottom:1px solid var(--border)}
+.brand-icon{width:32px;height:32px;background:var(--blue);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.brand-name{font-weight:700;font-size:14px;letter-spacing:-.2px;line-height:1.2}
+.brand-env{font-size:10px;color:var(--muted);font-family:var(--mono)}
+.nav-sec{padding:10px 8px 2px}
+.nav-sec-lbl{font-size:10px;font-weight:600;color:var(--muted);letter-spacing:.8px;padding:5px 8px 3px;font-family:var(--mono)}
+.ni{display:flex;align-items:center;gap:8px;padding:7px 9px;border-radius:var(--r);cursor:pointer;color:var(--sub);font-size:13px;font-weight:500;transition:all .1s;margin-bottom:1px}
+.ni:hover{background:var(--s3);color:var(--text)}
+.ni.on{background:var(--blue-l);color:var(--blue)}
+.ni .ico{font-size:15px;width:18px;text-align:center;flex-shrink:0}
+.ni .ct{margin-left:auto;font-size:10px;font-family:var(--mono);background:var(--s3);color:var(--muted);padding:1px 6px;border-radius:10px;min-width:18px;text-align:center}
+.ni.on .ct{background:rgba(37,99,235,.1);color:var(--blue)}
+.aside-foot{margin-top:auto;padding:10px;border-top:1px solid var(--border)}
+.sp-pill{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:var(--r2);background:var(--s3);border:1px solid var(--border);font-size:12px}
+.sp-led{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.sp-led.on{background:var(--green);box-shadow:0 0 0 2px rgba(21,128,61,.18)}
+.sp-led.off{background:var(--muted)}
+.sp-n{font-weight:600;font-size:12px;line-height:1.2}
+.sp-u{font-size:10px;color:var(--muted);font-family:var(--mono)}
+
+/* ── Topbar ── */
+.topbar{display:flex;align-items:center;gap:10px;padding:11px 22px;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0}
+.tb-title{font-size:15px;font-weight:700;flex:1}
+.tb-list-badge{font-size:11px;font-family:var(--mono);background:var(--blue-l);color:var(--blue);border:1px solid rgba(37,99,235,.2);padding:2px 8px;border-radius:4px;margin-left:6px}
+.srch{position:relative}
+.srch input{width:260px;padding:7px 11px 7px 32px;border:1px solid var(--border2);border-radius:var(--r);background:var(--s3);font-size:13px;font-family:var(--font);color:var(--text);outline:none;transition:all .15s}
+.srch input:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,235,.1);background:var(--surface)}
+.srch input::placeholder{color:var(--muted)}
+.srch-ico{position:absolute;left:9px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:13px;pointer-events:none}
+.btn{display:inline-flex;align-items:center;gap:5px;padding:7px 13px;border-radius:var(--r);border:1px solid var(--border2);background:var(--surface);color:var(--text);font-size:13px;font-family:var(--font);font-weight:500;cursor:pointer;transition:all .1s;white-space:nowrap;box-shadow:var(--sh)}
+.btn:hover{background:var(--s3)}
+.btn.pri{background:var(--blue);border-color:var(--blue);color:#fff;box-shadow:0 1px 3px rgba(37,99,235,.3)}
+.btn.pri:hover{background:var(--blue-d)}
+.btn.sm{padding:5px 9px;font-size:12px;box-shadow:none}
+.btn.ghost{border-color:transparent;box-shadow:none;background:transparent}
+.btn.ghost:hover{background:var(--s3)}
+.btn.del:hover{color:var(--red);border-color:rgba(220,38,38,.3);background:var(--red-l)}
+
+/* ── Filter bar ── */
+.fbar{display:flex;align-items:center;gap:6px;padding:8px 22px;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0;flex-wrap:wrap}
+.fbar-lbl{font-size:10px;font-weight:600;color:var(--muted);font-family:var(--mono);margin-right:2px}
+.fchip{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;border:1px solid var(--border);background:var(--surface);font-size:12px;font-weight:500;cursor:pointer;transition:all .1s;color:var(--sub)}
+.fchip:hover{border-color:var(--border2);color:var(--text)}
+.fchip.on{border-width:1.5px}
+.fchip[data-v="Portátil"].on{color:var(--blue);background:var(--blue-l);border-color:var(--blue)}
+.fchip[data-v="Sobremesa"].on{color:var(--teal);background:var(--teal-l);border-color:var(--teal)}
+.fchip[data-v="All-in-One"].on{color:var(--purple);background:var(--purple-l);border-color:var(--purple)}
+.fchip[data-v="Servidor"].on{color:var(--amber);background:var(--amber-l);border-color:var(--amber)}
+.fchip[data-v="Mac"].on{color:var(--sub);background:var(--s3);border-color:var(--border2)}
+.fsel{padding:5px 8px;border:1px solid var(--border);border-radius:var(--r);font-size:12px;font-family:var(--font);color:var(--sub);background:var(--surface);outline:none;cursor:pointer}
+.spc{flex:1}
+
+/* ── Stats row ── */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+.sc{background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);padding:14px 16px;box-shadow:var(--sh);cursor:pointer;transition:border-color .15s}
+.sc:hover{border-color:var(--border2)}
+.sc-lbl{font-size:10px;font-weight:600;color:var(--muted);font-family:var(--mono);margin-bottom:4px;text-transform:uppercase;letter-spacing:.4px}
+.sc-val{font-size:26px;font-weight:700;line-height:1;margin-bottom:2px}
+.sc-sub{font-size:11px;color:var(--muted)}
+.sc.blue .sc-val{color:var(--blue)}
+.sc.green .sc-val{color:var(--green)}
+.sc.amber .sc-val{color:var(--amber)}
+.sc.red .sc-val{color:var(--red)}
+
+/* ── Table ── */
+.tc{background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);box-shadow:var(--sh);overflow:hidden}
+table{width:100%;border-collapse:collapse}
+thead{background:var(--s2)}
+th{padding:8px 13px;text-align:left;font-size:10px;font-weight:600;color:var(--muted);font-family:var(--mono);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border);cursor:pointer;user-select:none;white-space:nowrap}
+th:hover{color:var(--text)}
+th.sk{color:var(--blue)}
+td{padding:9px 13px;border-bottom:1px solid var(--border);font-size:13px;vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(37,99,235,.015)}
+.cell-name{font-weight:600;line-height:1.3}
+.cell-name small{display:block;font-size:11px;color:var(--muted);font-weight:400;font-family:var(--mono);margin-top:1px}
+.tipo-chip{display:inline-flex;align-items:center;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;font-family:var(--mono)}
+.tipo-Portátil{background:var(--blue-l);color:var(--blue)}
+.tipo-Sobremesa{background:var(--teal-l);color:var(--teal)}
+.tipo-All-in-One{background:var(--purple-l);color:var(--purple)}
+.tipo-Servidor{background:var(--amber-l);color:var(--amber)}
+.tipo-Mac{background:var(--s3);color:var(--sub);border:1px solid var(--border)}
+.tipo-default{background:var(--s3);color:var(--sub)}
+.mono-tag{font-family:var(--mono);font-size:11px;background:var(--s3);border:1px solid var(--border);border-radius:4px;padding:1px 6px;color:var(--cyan)}
+.bitlocker-tag{font-family:var(--mono);font-size:10px;color:var(--green);background:var(--green-l);border:1px solid rgba(21,128,61,.2);border-radius:4px;padding:1px 5px;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:inline-block;cursor:help}
+.row-acts{display:flex;gap:3px;opacity:0;transition:opacity .1s}
+tr:hover .row-acts{opacity:1}
+.ib{width:26px;height:26px;border-radius:5px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px;transition:all .1s}
+.ib:hover{background:var(--s3);color:var(--text);border-color:var(--border2)}
+.ib.del:hover{color:var(--red);border-color:rgba(220,38,38,.3);background:var(--red-l)}
+.empty{padding:50px;text-align:center;color:var(--muted)}
+.empty .ei{font-size:36px;margin-bottom:10px;opacity:.4}
+.pager{display:flex;align-items:center;justify-content:space-between;padding:9px 14px;border-top:1px solid var(--border);font-size:12px;color:var(--muted)}
+.pager-btns{display:flex;gap:3px}
+.pb{width:26px;height:26px;border-radius:5px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;font-size:12px;font-family:var(--font);transition:all .1s;display:flex;align-items:center;justify-content:center}
+.pb:hover,.pb.on{background:var(--s3);color:var(--text);border-color:var(--border2)}
+.pb.on{color:var(--blue);border-color:rgba(37,99,235,.3);background:var(--blue-l)}
+.pb:disabled{opacity:.35;cursor:not-allowed}
+
+/* ── Modal ── */
+.ov{position:fixed;inset:0;background:rgba(10,15,30,.4);backdrop-filter:blur(4px);z-index:100;display:none;align-items:flex-start;justify-content:center;padding:36px 16px 36px;overflow-y:auto}
+.ov.open{display:flex}
+.mod{background:var(--surface);border:1px solid var(--border);border-radius:var(--r3);width:640px;max-width:100%;box-shadow:var(--sh2);animation:up .16s ease}
+@keyframes up{from{transform:translateY(10px);opacity:0}}
+.mh{display:flex;align-items:flex-start;justify-content:space-between;padding:18px 20px 14px;border-bottom:1px solid var(--border)}
+.mh-t{font-size:16px;font-weight:700}
+.mh-s{font-size:12px;color:var(--muted);margin-top:2px}
+.mc{width:28px;height:28px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;transition:all .1s;flex-shrink:0}
+.mc:hover{background:var(--s3);color:var(--text)}
+.mb{padding:18px 20px}
+.mf{padding:12px 20px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px}
+.fg{display:flex;flex-direction:column;gap:4px}
+label.fl{font-size:10px;font-weight:600;color:var(--muted);font-family:var(--mono);text-transform:uppercase;letter-spacing:.4px}
+input.fi,select.fi,textarea.fi{width:100%;padding:8px 11px;border:1px solid var(--border2);border-radius:var(--r);background:var(--s3);font-size:13px;font-family:var(--font);color:var(--text);outline:none;transition:all .15s}
+input.fi:focus,select.fi:focus,textarea.fi:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,235,.08);background:var(--surface)}
+textarea.fi{resize:vertical;min-height:64px}
+.fgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.full{grid-column:1/-1}
+.fsep{font-size:10px;font-weight:600;color:var(--muted);font-family:var(--mono);letter-spacing:.8px;padding:12px 0 4px;display:flex;align-items:center;gap:8px}
+.fsep::after{content:'';flex:1;height:1px;background:var(--border)}
+
+/* ── Detail modal ── */
+.dmod .mod{width:720px}
+.dgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+.df{background:var(--s3);border-radius:var(--r);padding:9px 11px}
+.df-k{font-size:9px;font-weight:600;color:var(--muted);font-family:var(--mono);text-transform:uppercase;letter-spacing:.4px;margin-bottom:3px}
+.df-v{font-size:13px;font-weight:500}
+.df.f2{grid-column:span 2}
+.df.f3{grid-column:1/-1}
+
+/* ── Auth ── */
+#auth{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:200}
+.auth-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--r3);padding:34px;width:400px;box-shadow:var(--sh2)}
+.auth-head{display:flex;align-items:center;gap:11px;margin-bottom:6px}
+.auth-icon{width:40px;height:40px;background:var(--blue);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:20px}
+.auth-title{font-size:19px;font-weight:700;letter-spacing:-.3px}
+.auth-sub{font-size:11px;color:var(--muted);font-family:var(--mono)}
+.auth-desc{font-size:13px;color:var(--sub);line-height:1.6;margin:14px 0 18px}
+.auth-field{margin-bottom:11px}
+.auth-field label{display:block;font-size:10px;font-weight:600;color:var(--muted);font-family:var(--mono);text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px}
+.auth-field input{width:100%;padding:8px 11px;border:1px solid var(--border2);border-radius:var(--r);background:var(--s3);font-size:13px;font-family:var(--font);color:var(--text);outline:none;transition:all .15s}
+.auth-field input:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,235,.1);background:var(--surface)}
+.auth-sep{display:flex;align-items:center;gap:10px;font-size:11px;color:var(--muted);margin:14px 0}
+.auth-sep::before,.auth-sep::after{content:'';flex:1;height:1px;background:var(--border)}
+.auth-btn{width:100%;padding:9px;background:var(--blue);border:none;border-radius:var(--r);color:#fff;font-size:14px;font-family:var(--font);font-weight:600;cursor:pointer;transition:background .1s}
+.auth-btn:hover{background:var(--blue-d)}
+.auth-btn.ghost{background:var(--surface);border:1px solid var(--border2);color:var(--text);box-shadow:var(--sh)}
+.auth-btn.ghost:hover{background:var(--s3)}
+.auth-err{font-size:12px;color:var(--red);background:var(--red-l);border:1px solid rgba(220,38,38,.2);border-radius:var(--r);padding:7px 10px;margin-top:10px;display:none}
+.entra-row{display:flex;align-items:center;gap:8px;padding:9px 11px;border:1px solid var(--border2);border-radius:var(--r);font-size:13px;cursor:pointer;background:var(--surface);transition:all .1s;font-family:var(--font);font-weight:500}
+.entra-row:hover{background:var(--s3)}
+.entra-logo{width:18px;height:18px;flex-shrink:0}
+
+/* ── Dashboard ── */
+.dash-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}
+.dcard{background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);padding:16px 18px;box-shadow:var(--sh)}
+.dcard-t{font-size:13px;font-weight:600;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between}
+.bar-r{display:flex;align-items:center;gap:9px;margin-bottom:8px}
+.bar-l{font-size:12px;color:var(--sub);width:96px;flex-shrink:0;text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bar-t{flex:1;height:6px;background:var(--s3);border-radius:3px;overflow:hidden}
+.bar-f{height:100%;border-radius:3px;transition:width .65s ease}
+.bar-n{font-size:10px;font-family:var(--mono);color:var(--muted);width:22px}
+.donut-w{display:flex;align-items:center;gap:18px}
+.dleg{display:flex;flex-direction:column;gap:6px;flex:1}
+.dleg-r{display:flex;align-items:center;gap:7px;font-size:12px}
+.dleg-v{margin-left:auto;font-family:var(--mono);font-size:11px;font-weight:500;color:var(--sub)}
+.ldot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.act-list{display:flex;flex-direction:column;gap:6px}
+.act-r{display:flex;align-items:center;gap:9px;padding:7px 9px;background:var(--s3);border-radius:var(--r);font-size:12px}
+.act-ico{font-size:15px;width:24px;text-align:center}
+.act-txt{flex:1}
+.act-txt strong{font-weight:600;display:block;font-size:12px}
+.act-txt span{color:var(--muted);font-size:11px}
+.top-list{display:flex;flex-direction:column;gap:5px}
+.top-r{display:flex;align-items:center;justify-content:space-between;padding:6px 9px;background:var(--s3);border-radius:var(--r);font-size:12px}
+.top-r span:last-child{font-family:var(--mono);font-size:10px;color:var(--muted)}
+
+/* ── Config ── */
+.ccard{background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);padding:18px;box-shadow:var(--sh);margin-bottom:14px}
+.ccard h3{font-size:14px;font-weight:700;margin-bottom:3px}
+.ccard p{font-size:13px;color:var(--sub);line-height:1.6;margin-bottom:12px}
+.ctag{font-family:var(--mono);font-size:11px;background:var(--blue-l);color:var(--blue);border:1px solid rgba(37,99,235,.2);border-radius:4px;padding:2px 7px;display:inline-block}
+.cg{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.step-r{display:flex;gap:11px;padding:7px 0;border-bottom:1px solid var(--border)}
+.step-r:last-child{border-bottom:none}
+.step-n{width:20px;height:20px;border-radius:50%;background:var(--blue);color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px}
+.step-t{font-size:13px;color:var(--sub);line-height:1.6}
+
+/* ── Toast ── */
+.toast{position:fixed;bottom:18px;right:18px;z-index:300;background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);padding:9px 15px;font-size:13px;box-shadow:var(--sh2);display:flex;align-items:center;gap:8px;transform:translateY(50px);opacity:0;transition:all .22s;max-width:280px}
+.toast.show{transform:translateY(0);opacity:1}
+.toast.ok{border-left:3px solid var(--green)}
+.toast.warn{border-left:3px solid var(--amber)}
+.toast.err{border-left:3px solid var(--red)}
+
+/* ── Loading ── */
+.loading-row td{text-align:center;color:var(--muted);padding:28px;font-size:13px}
+.spin{display:inline-block;width:14px;height:14px;border:2px solid var(--border2);border-top-color:var(--blue);border-radius:50%;animation:spin .65s linear infinite;vertical-align:middle;margin-right:7px}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════ AUTH ══════════════════════════════ -->
+<div id="auth">
+<div class="auth-wrap">
+  <div class="auth-head">
+    <div class="auth-icon">📦</div>
+    <div><div class="auth-title">Inventario IT</div><div class="auth-sub">BD_PC · BD_Perifericos · BD_Telefonos</div></div>
+  </div>
+  <p class="auth-desc">Conecta con tu tenant de Microsoft 365. La app lee directamente tus listas de SharePoint usando las mismas credenciales que Power Apps.</p>
+
+  <!-- Entra ID SSO (primary) -->
+  <div class="entra-row" onclick="loginEntra()">
+    <svg class="entra-logo" viewBox="0 0 21 21" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="10" height="10" fill="#F25022"/><rect x="11" width="10" height="10" fill="#7FBA00"/>
+      <rect y="11" width="10" height="10" fill="#00A4EF"/><rect x="11" y="11" width="10" height="10" fill="#FFB900"/>
+    </svg>
+    Iniciar sesión con Microsoft (Entra ID)
+  </div>
+
+  <div class="auth-sep">o configuración manual</div>
+
+  <div class="auth-field"><label>Tenant ID</label><input id="a-t" type="text" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"></div>
+  <div class="auth-field"><label>Client ID</label><input id="a-c" type="text" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"></div>
+  <div class="auth-field"><label>URL del sitio SharePoint</label><input id="a-s" type="text" placeholder="https://contoso.sharepoint.com/sites/IT"></div>
+  <button class="auth-btn" onclick="loginManual()" style="margin-bottom:8px">Conectar con SharePoint</button>
+  <button class="auth-btn ghost" onclick="demoMode()">Entrar en modo demo</button>
+  <div class="auth-err" id="a-err"></div>
+</div>
+</div>
+
+<!-- ══════════════════════════════ APP ══════════════════════════════ -->
+<div class="shell" id="app" style="display:none">
+  <div class="aside">
+    <div class="brand">
+      <div class="brand-icon">📦</div>
+      <div><div class="brand-name">Inventario IT</div><div class="brand-env" id="brand-env">—</div></div>
+    </div>
+
+    <div class="nav-sec">
+      <div class="nav-sec-lbl">General</div>
+      <div class="ni on" id="ni-dash" onclick="go('dash')"><span class="ico">◉</span>Panel<span class="ct" id="ct-total">0</span></div>
+    </div>
+    <div class="nav-sec">
+      <div class="nav-sec-lbl">Listas SharePoint</div>
+      <div class="ni" id="ni-pc" onclick="go('pc')"><span class="ico">💻</span>BD_PC<span class="ct" id="ct-pc">0</span></div>
+      <div class="ni" id="ni-peri" onclick="go('peri')"><span class="ico">🖱</span>BD_Perifericos<span class="ct" id="ct-peri">0</span></div>
+      <div class="ni" id="ni-tel" onclick="go('tel')"><span class="ico">📞</span>BD_Telefonos<span class="ct" id="ct-tel">0</span></div>
+      <div class="ni" id="ni-ext" onclick="go('ext')"><span class="ico">👤</span>BD_Externos<span class="ct" id="ct-ext">0</span></div>
+      <div class="ni" id="ni-bi" onclick="go('bi')"><span class="ico">📊</span>BD_BI<span class="ct" id="ct-bi">0</span></div>
+    </div>
+    <div class="nav-sec">
+      <div class="nav-sec-lbl">Gestión</div>
+      <div class="ni" id="ni-users" onclick="go('users')"><span class="ico">👥</span>BD_Usuarios<span class="ct" id="ct-users">0</span></div>
+      <div class="ni" id="ni-lic" onclick="go('lic')"><span class="ico">📋</span>Licencias D365<span class="ct" id="ct-lic">0</span></div>
+      <div class="ni" id="ni-dept" onclick="go('dept')"><span class="ico">🏢</span>Departamentos<span class="ct" id="ct-dept">0</span></div>
+    </div>
+    <div class="nav-sec">
+      <div class="nav-sec-lbl">Sistema</div>
+      <div class="ni" id="ni-cfg" onclick="go('cfg')"><span class="ico">⚙</span>Configuración SP</div>
+    </div>
+
+    <div class="aside-foot">
+      <div class="sp-pill">
+        <div class="sp-led" id="sp-led"></div>
+        <div><div class="sp-n" id="sp-n">—</div><div class="sp-u" id="sp-u">—</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="main-col">
+    <div class="topbar">
+      <div class="tb-title" id="tb-title">Panel</div>
+      <div id="tb-badge"></div>
+      <div class="spc"></div>
+      <div class="srch"><span class="srch-ico">🔍</span><input type="text" id="q" placeholder="Buscar nombre, equipo, IP, usuario…" oninput="render()"></div>
+      <button class="btn" onclick="syncCurrent()">↻ Sync</button>
+      <button class="btn" onclick="exportCSV()">⬇ CSV</button>
+      <button class="btn pri" id="add-btn" onclick="openAdd()">＋ Añadir</button>
+    </div>
+    <div class="fbar" id="fbar" style="display:none"></div>
+    <div class="scroll-area" id="content"></div>
+  </div>
+</div>
+
+<!-- ADD / EDIT MODAL -->
+<div class="ov" id="modal">
+  <div class="mod">
+    <div class="mh">
+      <div><div class="mh-t" id="m-t">Nuevo registro</div><div class="mh-s" id="m-s"></div></div>
+      <button class="mc" onclick="cm('modal')">✕</button>
+    </div>
+    <div class="mb" id="m-body"></div>
+    <div class="mf">
+      <button class="btn" onclick="cm('modal')">Cancelar</button>
+      <button class="btn pri" onclick="saveRec()">💾 Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- DETAIL MODAL -->
+<div class="ov dmod" id="dmod">
+  <div class="mod" style="width:720px">
+    <div class="mh">
+      <div><div class="mh-t" id="d-t">Detalle</div><div class="mh-s" id="d-s"></div></div>
+      <button class="mc" onclick="cm('dmod')">✕</button>
+    </div>
+    <div class="mb" id="d-body"></div>
+    <div class="mf">
+      <button class="btn" onclick="cm('dmod')">Cerrar</button>
+      <button class="btn pri" id="d-edit-btn">✏ Editar</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- ══════════════════════════════ SCRIPT ══════════════════════════════ -->
+<script>
+// ═══════════════════════════════════════════════════════════
+// CONFIG — mapped exactly to real SP column names from screenshot
+// ═══════════════════════════════════════════════════════════
+const SP = { demo:true, tenantId:'', clientId:'', siteUrl:'', token:'', user:'' };
+
+// List definitions: { id, name, spListName, icon, color, fields[] }
+// fields: { key, spCol, label, type, width, primary?, mono?, bitlocker? }
+const LISTS = {
+  pc: {
+    id:'pc', name:'BD_PC', icon:'💻', color:'var(--blue)',
+    spListName:'BD_PC',
+    filterField: 'Tipo',
+    filterValues: ['Portátil','Sobremesa','All-in-One','Servidor','Mac'],
+    fields: [
+      { key:'titulo',        spCol:'Title',             label:'Usuario asignado',  type:'text',   primary:true },
+      { key:'nombreEquipo',  spCol:'Nombre_x0020_del_x0020_equipo', label:'Nombre del equipo', type:'text', mono:true },
+      { key:'tipo',          spCol:'Tipo',              label:'Tipo',              type:'choice', badge:true },
+      { key:'marca',         spCol:'Marca',             label:'Marca',             type:'text' },
+      { key:'modelo',        spCol:'Modelo',            label:'Modelo',            type:'text' },
+      { key:'cpu',           spCol:'CPU',               label:'CPU',               type:'text' },
+      { key:'ram',           spCol:'RAM',               label:'RAM',               type:'text' },
+      { key:'numSerie',      spCol:'N_x00ba__x0020_de_x0020_serie', label:'Nº de serie', type:'text', mono:true },
+      { key:'memoriaDisco',  spCol:'Memoria_x0020_Disco', label:'Memoria Disco',   type:'text' },
+      { key:'claveBitlocker',spCol:'Clave_x0020_BITLOCKER', label:'Clave BITLOCKER', type:'text', bitlocker:true },
+      { key:'modificadoPor', spCol:'Modificado_x0020_por_x0020_IT', label:'Modificado por IT', type:'text' },
+      { key:'fechaCompra',   spCol:'Fecha_x0020_de_x0020_compra', label:'Fecha de compra', type:'date' },
+      { key:'observaciones', spCol:'Observaciones',     label:'Observaciones',     type:'note', full:true },
+    ]
+  },
+  peri: {
+    id:'peri', name:'BD_Perifericos', icon:'🖱', color:'var(--purple)',
+    spListName:'BD_Perifericos',
+    fields: [
+      { key:'titulo',       spCol:'Title',           label:'Nombre / Usuario',  type:'text', primary:true },
+      { key:'tipo',         spCol:'Tipo',            label:'Tipo',              type:'choice', badge:true },
+      { key:'marca',        spCol:'Marca',           label:'Marca',             type:'text' },
+      { key:'modelo',       spCol:'Modelo',          label:'Modelo',            type:'text' },
+      { key:'numSerie',     spCol:'NumSerie',        label:'Nº de serie',       type:'text', mono:true },
+      { key:'asignadoA',    spCol:'AsignadoA',       label:'Asignado a PC',     type:'text', mono:true },
+      { key:'estado',       spCol:'Estado',          label:'Estado',            type:'choice' },
+      { key:'ubicacion',    spCol:'Ubicacion',       label:'Ubicación',         type:'text' },
+      { key:'fechaAlta',    spCol:'FechaAlta',       label:'Fecha alta',        type:'date' },
+      { key:'observaciones',spCol:'Observaciones',   label:'Observaciones',     type:'note', full:true },
+    ]
+  },
+  tel: {
+    id:'tel', name:'BD_Telefonos', icon:'📞', color:'var(--pink)',
+    spListName:'BD_Telefonos',
+    fields: [
+      { key:'titulo',       spCol:'Title',           label:'Usuario',           type:'text', primary:true },
+      { key:'extension',    spCol:'Extension',       label:'Extensión',         type:'text', mono:true },
+      { key:'tipo',         spCol:'Tipo',            label:'Tipo',              type:'choice', badge:true },
+      { key:'marca',        spCol:'Marca',           label:'Marca',             type:'text' },
+      { key:'modelo',       spCol:'Modelo',          label:'Modelo',            type:'text' },
+      { key:'mac',          spCol:'MAC',             label:'MAC Address',       type:'text', mono:true },
+      { key:'numSerie',     spCol:'NumSerie',        label:'Nº de serie',       type:'text', mono:true },
+      { key:'ubicacion',    spCol:'Ubicacion',       label:'Ubicación',         type:'text' },
+      { key:'linea',        spCol:'Linea',           label:'Línea / SIM',       type:'text' },
+      { key:'observaciones',spCol:'Observaciones',   label:'Observaciones',     type:'note', full:true },
+    ]
+  },
+  ext: {
+    id:'ext', name:'BD_Externos', icon:'👤', color:'var(--orange)',
+    spListName:'BD_Externos',
+    fields: [
+      { key:'titulo',       spCol:'Title',           label:'Nombre',            type:'text', primary:true },
+      { key:'empresa',      spCol:'Empresa',         label:'Empresa',           type:'text' },
+      { key:'email',        spCol:'Email',           label:'Email',             type:'text', mono:true },
+      { key:'tipo',         spCol:'Tipo',            label:'Tipo acceso',       type:'choice', badge:true },
+      { key:'equipo',       spCol:'Equipo',          label:'Equipo asignado',   type:'text', mono:true },
+      { key:'inicio',       spCol:'Inicio',          label:'Fecha inicio',      type:'date' },
+      { key:'fin',          spCol:'Fin',             label:'Fecha fin',         type:'date' },
+      { key:'observaciones',spCol:'Observaciones',   label:'Observaciones',     type:'note', full:true },
+    ]
+  },
+  bi: {
+    id:'bi', name:'BD_BI', icon:'📊', color:'var(--teal)',
+    spListName:'BD_BI',
+    fields: [
+      { key:'titulo',       spCol:'Title',           label:'Nombre',            type:'text', primary:true },
+      { key:'tipo',         spCol:'Tipo',            label:'Tipo',              type:'text', badge:true },
+      { key:'responsable',  spCol:'Responsable',     label:'Responsable',       type:'text' },
+      { key:'herramienta',  spCol:'Herramienta',     label:'Herramienta',       type:'text' },
+      { key:'estado',       spCol:'Estado',          label:'Estado',            type:'choice' },
+      { key:'observaciones',spCol:'Observaciones',   label:'Observaciones',     type:'note', full:true },
+    ]
+  },
+  users: {
+    id:'users', name:'BD_Usuarios', icon:'👥', color:'var(--cyan)',
+    spListName:'BD_Usuarios',
+    fields: [
+      { key:'titulo',       spCol:'Title',           label:'Nombre completo',   type:'text', primary:true },
+      { key:'email',        spCol:'Email',           label:'Email',             type:'text', mono:true },
+      { key:'departamento', spCol:'Departamento',    label:'Departamento',      type:'text' },
+      { key:'cargo',        spCol:'Cargo',           label:'Cargo',             type:'text' },
+      { key:'pc',           spCol:'PC',              label:'PC asignado',       type:'text', mono:true },
+      { key:'telefono',     spCol:'Telefono',        label:'Teléfono',          type:'text' },
+      { key:'estado',       spCol:'Estado',          label:'Estado',            type:'choice' },
+      { key:'observaciones',spCol:'Observaciones',   label:'Observaciones',     type:'note', full:true },
+    ]
+  },
+  lic: {
+    id:'lic', name:'Licencias D365', icon:'📋', color:'var(--amber)',
+    spListName:'Cantidad Licencias D365',
+    fields: [
+      { key:'titulo',       spCol:'Title',           label:'Tipo de licencia',  type:'text', primary:true },
+      { key:'total',        spCol:'Total',           label:'Total',             type:'text', mono:true },
+      { key:'usadas',       spCol:'Usadas',          label:'Usadas',            type:'text', mono:true },
+      { key:'disponibles',  spCol:'Disponibles',     label:'Disponibles',       type:'text', mono:true },
+      { key:'observaciones',spCol:'Observaciones',   label:'Observaciones',     type:'note', full:true },
+    ]
+  },
+  dept: {
+    id:'dept', name:'Departamentos', icon:'🏢', color:'var(--sub)',
+    spListName:'Departamentos',
+    fields: [
+      { key:'titulo',       spCol:'Title',           label:'Departamento',      type:'text', primary:true },
+      { key:'responsable',  spCol:'Responsable',     label:'Responsable IT',    type:'text' },
+      { key:'planta',       spCol:'Planta',          label:'Planta / Sede',     type:'text' },
+      { key:'numEquipos',   spCol:'NumEquipos',      label:'Nº equipos',        type:'text', mono:true },
+      { key:'observaciones',spCol:'Observaciones',   label:'Observaciones',     type:'note', full:true },
+    ]
+  },
+};
+
+// ═══════════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════════
+const DATA = {}; // { pc:[], peri:[], tel:[], ... }
+Object.keys(LISTS).forEach(k => DATA[k] = []);
+let view = 'dash', editId = null, editList = null;
+let sortKey = 'titulo', sortDir = 1, page = 1;
+const PER = 20;
+let activeTipos = new Set();
+
+// ═══════════════════════════════════════════════════════════
+// DEMO DATA
+// ═══════════════════════════════════════════════════════════
+function loadDemo() {
+  DATA.pc = [
+    {id:'1',titulo:'Joan Mulá',nombreEquipo:'AIR26009',tipo:'Portátil',marca:'Lenovo',modelo:'Yoga Slim 7 14IMH9',cpu:'Intel Core Ultra 7 155H',ram:'16 GB',numSerie:'YX0HPGAK',memoriaDisco:'512 GB',claveBitlocker:'482900-021208-515383-609180-373912-673211-204215-090541',modificadoPor:'Joan Llopis',fechaCompra:'2026-03-26',observaciones:''},
+    {id:'2',titulo:'Carlos Ruiz',nombreEquipo:'LAPTOP-002',tipo:'Portátil',marca:'HP',modelo:'EliteBook 840 G10',cpu:'Intel Core i7-1355U',ram:'16 GB',numSerie:'5CD3481KJW',memoriaDisco:'512 GB',claveBitlocker:'183920-481920-192038-483920-102938-473920-192038-473920',modificadoPor:'Joan Llopis',fechaCompra:'2024-09-15',observaciones:''},
+    {id:'3',titulo:'Lucía Martínez',nombreEquipo:'DT-MKTG-003',tipo:'Sobremesa',marca:'Dell',modelo:'OptiPlex 7090',cpu:'Intel Core i5-10500',ram:'8 GB',numSerie:'HX4K9L2',memoriaDisco:'256 GB',claveBitlocker:'',modificadoPor:'Joan Llopis',fechaCompra:'2022-03-10',observaciones:'Disco casi lleno. Ampliar pronto.'},
+    {id:'4',titulo:'Pedro Sánchez',nombreEquipo:'PC-HR-004',tipo:'Sobremesa',marca:'Lenovo',modelo:'ThinkCentre M75q',cpu:'AMD Ryzen 5 PRO 4650GE',ram:'8 GB',numSerie:'PF2KQ183',memoriaDisco:'256 GB',claveBitlocker:'293847-192837-483920-192038-483920-102938-293847-102938',modificadoPor:'Joan Llopis',fechaCompra:'2021-11-20',observaciones:''},
+    {id:'5',titulo:'Ana García',nombreEquipo:'MAC-DIR-005',tipo:'Mac',marca:'Apple',modelo:'MacBook Pro 14" M3',cpu:'Apple M3 Pro',ram:'18 GB',numSerie:'C02ZK1ABMD6T',memoriaDisco:'512 GB',claveBitlocker:'',modificadoPor:'Joan Llopis',fechaCompra:'2024-01-08',observaciones:'FileVault activo.'},
+    {id:'6',titulo:'IT Dept',nombreEquipo:'SRV-AD-01',tipo:'Servidor',marca:'HP',modelo:'ProLiant DL380 Gen10',cpu:'Intel Xeon Silver 4216',ram:'64 GB',numSerie:'SGH1234BKD',memoriaDisco:'2048 GB',claveBitlocker:'',modificadoPor:'Joan Llopis',fechaCompra:'2021-02-15',observaciones:'Controlador de dominio primario. No apagar sin aviso.'},
+    {id:'7',titulo:'María López',nombreEquipo:'AIO-REC-007',tipo:'All-in-One',marca:'HP',modelo:'EliteOne 800 G6',cpu:'Intel Core i5-10500',ram:'8 GB',numSerie:'CZC132K8JW',memoriaDisco:'256 GB',claveBitlocker:'748392-192837-483920-102938-293847-483920-192038-483920',modificadoPor:'Joan Llopis',fechaCompra:'2023-05-22',observaciones:'Recepción planta baja.'},
+  ];
+  DATA.peri = [
+    {id:'p1',titulo:'Joan Mulá',tipo:'Monitor',marca:'LG',modelo:'27UK850-W 4K',numSerie:'LG-P1112233',asignadoA:'AIR26009',estado:'Activo',ubicacion:'Planta 2 - Sala A',fechaAlta:'2023-03-15',observaciones:''},
+    {id:'p2',titulo:'Carlos Ruiz',tipo:'Teclado',marca:'Logitech',modelo:'MX Keys',numSerie:'LOG-K381-225',asignadoA:'LAPTOP-002',estado:'Activo',ubicacion:'Planta 1 - Dev',fechaAlta:'2024-09-15',observaciones:''},
+    {id:'p3',titulo:'Carlos Ruiz',tipo:'Ratón',marca:'Logitech',modelo:'MX Master 3',numSerie:'LOG-MX3-334',asignadoA:'LAPTOP-002',estado:'Activo',ubicacion:'Planta 1 - Dev',fechaAlta:'2024-09-15',observaciones:''},
+    {id:'p4',titulo:'Lucía Martínez',tipo:'Monitor',marca:'Dell',modelo:'U2722D',numSerie:'CN-0FG3KX',asignadoA:'DT-MKTG-003',estado:'Activo',ubicacion:'Planta 2 - Marketing',fechaAlta:'2022-03-10',observaciones:''},
+  ];
+  DATA.tel = [
+    {id:'t1',titulo:'Lucía Martínez',extension:'1001',tipo:'IP',marca:'Cisco',modelo:'IP Phone 8865',mac:'00:11:22:33:44:55',numSerie:'FCH2301A1B2',ubicacion:'Planta 3 - Dirección',linea:'Ext. 1001',observaciones:''},
+    {id:'t2',titulo:'Recepción',extension:'1000',tipo:'IP',marca:'Yealink',modelo:'T54W',mac:'80:5E:C0:1A:2B:3C',numSerie:'YLK-T54W-001',ubicacion:'Planta 0 - Recepción',linea:'Ext. 1000',observaciones:'Línea principal entrada.'},
+    {id:'t3',titulo:'IT Support',extension:'1099',tipo:'Móvil',marca:'Samsung',modelo:'Galaxy A54',mac:'',numSerie:'RF8N90XXXXX',ubicacion:'Pool IT',linea:'+34 600 000 000',observaciones:'SIM corporativa.'},
+  ];
+  DATA.ext = [
+    {id:'e1',titulo:'Proveedor Redes SL',empresa:'NetCorp',email:'soporte@netcorp.es',tipo:'VPN',equipo:'EXT-VPN-001',inicio:'2025-01-01',fin:'2025-12-31',observaciones:'Contrato mantenimiento switches.'},
+  ];
+  DATA.bi = [
+    {id:'b1',titulo:'Dashboard Ventas',tipo:'Power BI',responsable:'Ana García',herramienta:'Power BI Desktop',estado:'Activo',observaciones:''},
+    {id:'b2',titulo:'Informe RRHH',tipo:'Excel',responsable:'Pedro Sánchez',herramienta:'Excel 365',estado:'Activo',observaciones:''},
+  ];
+  DATA.users = [
+    {id:'u1',titulo:'Joan Mulá',email:'joan.mula@empresa.com',departamento:'Dirección',cargo:'CEO',pc:'AIR26009',telefono:'1001',estado:'Activo',observaciones:''},
+    {id:'u2',titulo:'Carlos Ruiz',email:'carlos.ruiz@empresa.com',departamento:'IT',cargo:'Sysadmin',pc:'LAPTOP-002',telefono:'1099',estado:'Activo',observaciones:''},
+    {id:'u3',titulo:'Lucía Martínez',email:'lucia.martinez@empresa.com',departamento:'Marketing',cargo:'Directora Marketing',pc:'DT-MKTG-003',telefono:'1001',estado:'Activo',observaciones:''},
+  ];
+  DATA.lic = [
+    {id:'l1',titulo:'Microsoft 365 Business Standard',total:'50',usadas:'38',disponibles:'12',observaciones:'Renovación anual enero.'},
+    {id:'l2',titulo:'Microsoft 365 E3',total:'10',usadas:'10',disponibles:'0',observaciones:'Completamente asignadas.'},
+    {id:'l3',titulo:'Power BI Pro',total:'15',usadas:'5',disponibles:'10',observaciones:''},
+    {id:'l4',titulo:'Dynamics 365',total:'5',usadas:'3',disponibles:'2',observaciones:''},
+  ];
+  DATA.dept = [
+    {id:'d1',titulo:'IT',responsable:'Carlos Ruiz',planta:'Planta 1',numEquipos:'12',observaciones:''},
+    {id:'d2',titulo:'Marketing',responsable:'Lucía Martínez',planta:'Planta 2',numEquipos:'8',observaciones:''},
+    {id:'d3',titulo:'Dirección',responsable:'Joan Mulá',planta:'Planta 3',numEquipos:'4',observaciones:''},
+    {id:'d4',titulo:'RRHH',responsable:'Pedro Sánchez',planta:'Planta 1',numEquipos:'6',observaciones:''},
+  ];
+}
+
+// ═══════════════════════════════════════════════════════════
+// AUTH
+// ═══════════════════════════════════════════════════════════
+function loginEntra() {
+  // Real implementation: use MSAL.js
+  // import('@azure/msal-browser').then(msal => { ... })
+  // const msalConfig = { auth: { clientId: SP.clientId, authority: `https://login.microsoftonline.com/${SP.tenantId}` } }
+  // const pca = new msal.PublicClientApplication(msalConfig);
+  // pca.loginPopup({ scopes: ['https://graph.microsoft.com/Sites.ReadWrite.All'] })
+  //   .then(r => { SP.token = r.accessToken; SP.user = r.account.name; launchApp(false); })
+  toast('Para producción: incluye msal-browser y configura clientId/tenantId. Por ahora entramos en demo.','warn');
+  setTimeout(() => demoMode(), 1400);
+}
+function loginManual() {
+  const t=document.getElementById('a-t').value.trim();
+  const c=document.getElementById('a-c').value.trim();
+  const s=document.getElementById('a-s').value.trim();
+  if(!t||!c||!s){showAuthErr('Rellena Tenant ID, Client ID y URL del sitio');return}
+  Object.assign(SP,{tenantId:t,clientId:c,siteUrl:s,demo:false});
+  launchApp(false);
+}
+function demoMode() { SP.demo=true; loadDemo(); launchApp(true); }
+function showAuthErr(m){const e=document.getElementById('a-err');e.textContent=m;e.style.display='block'}
+function launchApp(demo) {
+  document.getElementById('auth').style.display='none';
+  document.getElementById('app').style.display='flex';
+  const led=document.getElementById('sp-led');
+  if(demo){
+    led.className='sp-led off';
+    document.getElementById('sp-n').textContent='Modo Demo';
+    document.getElementById('sp-u').textContent='Datos de ejemplo';
+    document.getElementById('brand-env').textContent='DEMO';
+  } else {
+    led.className='sp-led on';
+    document.getElementById('sp-n').textContent=SP.user||'SharePoint';
+    document.getElementById('sp-u').textContent=(SP.siteUrl||'').replace('https://','').slice(0,24)+'…';
+    document.getElementById('brand-env').textContent='LIVE';
+    loadAllLists();
+  }
+  refreshCounts(); go('dash');
+}
+
+// ═══════════════════════════════════════════════════════════
+// GRAPH API — multi-list loader
+// ═══════════════════════════════════════════════════════════
+async function getToken() {
+  // With MSAL: return await msalInstance.acquireTokenSilent({ scopes:['https://graph.microsoft.com/.default'] }).then(r=>r.accessToken)
+  return SP.token || null;
+}
+async function loadList(listId) {
+  const cfg = LISTS[listId]; if(!cfg||SP.demo) return;
+  const token = await getToken(); if(!token) return;
+  try {
+    const siteId = await getSiteId(token);
+    let url = `https://graph.microsoft.com/v1.0/sites/${siteId}/lists/${encodeURIComponent(cfg.spListName)}/items?expand=fields&$top=999`;
+    let all = [];
+    while(url) {
+      const r = await fetch(url,{headers:{Authorization:`Bearer ${token}`}});
+      const d = await r.json(); all = all.concat(d.value||[]); url = d['@odata.nextLink']||null;
+    }
+    DATA[listId] = all.map(item => {
+      const obj = { id: item.id, _spId: item.id };
+      cfg.fields.forEach(f => { obj[f.key] = item.fields?.[f.spCol] || ''; });
+      return obj;
+    });
+    refreshCounts();
+    if(view===listId) render();
+    toast(`✅ ${cfg.name} cargada (${DATA[listId].length} items)`,'ok');
+  } catch(e) { toast(`Error cargando ${cfg.name}: ${e.message}`,'err'); }
+}
+async function loadAllLists() { for(const k of Object.keys(LISTS)) await loadList(k); }
+async function getSiteId(token) {
+  if(SP._siteId) return SP._siteId;
+  const u=SP.siteUrl.replace('https://',''); const [h,...p]=u.split('/');
+  const r=await fetch(`https://graph.microsoft.com/v1.0/sites/${h}:/${p.join('/')}`,{headers:{Authorization:`Bearer ${token}`}});
+  const d=await r.json(); SP._siteId=d.id; return d.id;
+}
+async function saveToSP(listId, rec) {
+  if(SP.demo) return;
+  const token=await getToken(); if(!token) return;
+  const cfg=LISTS[listId];
+  const fields={};
+  cfg.fields.forEach(f=>{ if(f.spCol!=='Title') fields[f.spCol]=rec[f.key]||''; else fields.Title=rec[f.key]||''; });
+  const siteId=await getSiteId(token);
+  if(rec._spId) {
+    await fetch(`https://graph.microsoft.com/v1.0/sites/${siteId}/lists/${encodeURIComponent(cfg.spListName)}/items/${rec._spId}/fields`,{method:'PATCH',headers:{'Authorization':`Bearer ${token}`,'Content-Type':'application/json'},body:JSON.stringify(fields)});
+  } else {
+    const r=await fetch(`https://graph.microsoft.com/v1.0/sites/${siteId}/lists/${encodeURIComponent(cfg.spListName)}/items`,{method:'POST',headers:{'Authorization':`Bearer ${token}`,'Content-Type':'application/json'},body:JSON.stringify({fields})});
+    const d=await r.json(); rec._spId=d.id;
+  }
+}
+async function deleteFromSP(listId, spId) {
+  if(SP.demo||!spId) return;
+  const token=await getToken(); if(!token) return;
+  const cfg=LISTS[listId]; const siteId=await getSiteId(token);
+  await fetch(`https://graph.microsoft.com/v1.0/sites/${siteId}/lists/${encodeURIComponent(cfg.spListName)}/items/${spId}`,{method:'DELETE',headers:{Authorization:`Bearer ${token}`}});
+}
+function syncCurrent() {
+  if(SP.demo){toast('Modo demo: no hay SP conectado','warn');return}
+  if(view!=='dash'&&view!=='cfg') loadList(view);
+}
+
+// ═══════════════════════════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════════════════════════
+function go(v) {
+  view=v; page=1; activeTipos=new Set();
+  document.querySelectorAll('.ni').forEach(el=>el.classList.remove('on'));
+  const ni=document.getElementById('ni-'+v); if(ni) ni.classList.add('on');
+  const cfg=LISTS[v];
+  document.getElementById('tb-title').textContent = cfg ? cfg.name : (v==='dash'?'Panel':v==='cfg'?'Configuración':'—');
+  document.getElementById('tb-badge').innerHTML = cfg ? `<span class="tb-list-badge">${cfg.spListName}</span>` : '';
+  document.getElementById('add-btn').style.display = (v==='dash'||v==='cfg') ? 'none' : 'flex';
+  buildFilterBar(v);
+  render();
+}
+function buildFilterBar(v) {
+  const fbar = document.getElementById('fbar');
+  const cfg = LISTS[v];
+  if(!cfg||!cfg.filterValues) { fbar.style.display='none'; return; }
+  fbar.style.display='flex';
+  fbar.innerHTML = `<span class="fbar-lbl">Tipo:</span>
+    ${cfg.filterValues.map(val=>`<div class="fchip on" data-v="${val}" onclick="toggleTipo('${val}')">${val}</div>`).join('')}
+    <div class="spc"></div>
+    <select class="fsel" id="f-user" onchange="render()"><option value="">Todos los usuarios</option>${[...new Set(DATA[v].map(r=>r.titulo).filter(Boolean))].sort().map(u=>`<option>${u}</option>`).join('')}</select>`;
+  cfg.filterValues.forEach(v => activeTipos.add(v));
+}
+function toggleTipo(t) {
+  activeTipos.has(t)?activeTipos.delete(t):activeTipos.add(t);
+  document.querySelectorAll('.fchip').forEach(el=>el.classList.toggle('on',activeTipos.has(el.dataset.v)));
+  page=1; render();
+}
+
+// ═══════════════════════════════════════════════════════════
+// RENDER
+// ═══════════════════════════════════════════════════════════
+function render() {
+  if(view==='dash'){renderDash();return}
+  if(view==='cfg'){renderCfg();return}
+  const cfg=LISTS[view]; if(!cfg) return;
+  let data=[...DATA[view]];
+  const q=(document.getElementById('q')?.value||'').toLowerCase();
+  if(q) data=data.filter(r=>JSON.stringify(r).toLowerCase().includes(q));
+  if(cfg.filterValues && activeTipos.size) data=data.filter(r=>activeTipos.has(r.tipo));
+  const fu=document.getElementById('f-user')?.value||'';
+  if(fu) data=data.filter(r=>r.titulo===fu);
+  data=data.sort((a,b)=>{const av=(a[sortKey]||'').toString().toLowerCase(),bv=(b[sortKey]||'').toString().toLowerCase();return av<bv?-sortDir:av>bv?sortDir:0});
+  const total=data.length, pages=Math.max(1,Math.ceil(total/PER));
+  if(page>pages)page=1;
+  const slice=data.slice((page-1)*PER,page*PER);
+
+  // Which fields to show as columns (first 6 non-note fields)
+  const cols=cfg.fields.filter(f=>f.type!=='note').slice(0,7);
+
+  document.getElementById('content').innerHTML=`
+    <div class="tc">
+      <table>
+        <thead><tr>
+          ${cols.map(f=>`<th class="${sortKey===f.key?'sk':''}" onclick="sortBy('${f.key}')">${f.label} ${sortKey===f.key?(sortDir>0?'↑':'↓'):''}</th>`).join('')}
+          <th></th>
+        </tr></thead>
+        <tbody>
+          ${slice.length===0?`<tr><td colspan="${cols.length+1}"><div class="empty"><div class="ei">🔍</div>No se encontraron registros</div></td></tr>`:
+            slice.map(r=>`<tr>
+              ${cols.map((f,i)=>`<td>${renderCell(f,r,i===0)}</td>`).join('')}
+              <td><div class="row-acts">
+                <button class="ib" title="Ver detalle" onclick="viewRec('${r.id}','${view}')">👁</button>
+                <button class="ib" title="Editar" onclick="openEdit('${r.id}','${view}')">✏</button>
+                <button class="ib del" title="Eliminar" onclick="delRec('${r.id}','${view}')">🗑</button>
+              </div></td>
+            </tr>`).join('')
+          }
+        </tbody>
+      </table>
+      <div class="pager">
+        <span>${total} registros · pág. ${page}/${pages}</span>
+        <div class="pager-btns">
+          <button class="pb" onclick="changePg(${page-1})" ${page<=1?'disabled':''}>‹</button>
+          ${Array.from({length:Math.min(pages,7)},(_,i)=>i+1).map(p=>`<button class="pb ${p===page?'on':''}" onclick="changePg(${p})">${p}</button>`).join('')}
+          <button class="pb" onclick="changePg(${page+1})" ${page>=pages?'disabled':''}>›</button>
+        </div>
+      </div>
+    </div>`;
+}
+function renderCell(f,r,isPrimary) {
+  const val=r[f.key]||'';
+  if(!val&&!isPrimary) return '<span style="color:var(--muted)">—</span>';
+  if(f.bitlocker&&val) return `<span class="bitlocker-tag" title="${val}">🔒 ${val.slice(0,12)}…</span>`;
+  if(f.badge&&val) return `<span class="tipo-chip tipo-${val.replace(/\s/g,'-')}">${val}</span>`;
+  if(f.mono&&val) return `<span style="font-family:var(--mono);font-size:12px">${val}</span>`;
+  if(isPrimary) return `<div class="cell-name">${val}${r.nombreEquipo?`<small>${r.nombreEquipo}</small>`:''}</div>`;
+  if(f.type==='date'&&val) return `<span style="font-size:12px;color:var(--sub)">${val.split('T')[0]||val}</span>`;
+  return `<span style="font-size:13px">${val}</span>`;
+}
+function sortBy(k){sortKey===k?sortDir*=-1:(sortKey=k,sortDir=1);render()}
+function changePg(p){const data=DATA[view]||[];const pages=Math.max(1,Math.ceil(data.length/PER));if(p<1||p>pages)return;page=p;render()}
+
+// ═══════════════════════════════════════════════════════════
+// DASHBOARD
+// ═══════════════════════════════════════════════════════════
+function renderDash() {
+  const c=document.getElementById('content');
+  const pcData=DATA.pc, periData=DATA.peri, telData=DATA.tel;
+  const total=Object.values(DATA).reduce((s,arr)=>s+arr.length,0);
+  const tipos=['Portátil','Sobremesa','All-in-One','Servidor','Mac'];
+  const tipoCounts={}; tipos.forEach(t=>tipoCounts[t]=pcData.filter(r=>r.tipo===t).length);
+  const maxT=Math.max(...Object.values(tipoCounts),1);
+  const tipoColors={'Portátil':'var(--blue)','Sobremesa':'var(--teal)','All-in-One':'var(--purple)','Servidor':'var(--amber)','Mac':'var(--sub)'};
+  const byDept={}; DATA.users.forEach(u=>{if(u.departamento)byDept[u.departamento]=(byDept[u.departamento]||0)+1});
+  const topDept=Object.entries(byDept).sort((a,b)=>b[1]-a[1]).slice(0,5);
+  const lic=DATA.lic;
+  c.innerHTML=`
+    <div class="stats">
+      <div class="sc blue" onclick="go('pc')"><div class="sc-lbl">Ordenadores</div><div class="sc-val">${DATA.pc.length}</div><div class="sc-sub">BD_PC</div></div>
+      <div class="sc" style="cursor:pointer" onclick="go('peri')"><div class="sc-lbl">Periféricos</div><div class="sc-val" style="color:var(--purple)">${DATA.peri.length}</div><div class="sc-sub">BD_Perifericos</div></div>
+      <div class="sc" onclick="go('tel')"><div class="sc-lbl">Teléfonos</div><div class="sc-val" style="color:var(--pink)">${DATA.tel.length}</div><div class="sc-sub">BD_Telefonos</div></div>
+      <div class="sc" onclick="go('users')"><div class="sc-lbl">Usuarios</div><div class="sc-val" style="color:var(--cyan)">${DATA.users.length}</div><div class="sc-sub">BD_Usuarios</div></div>
+    </div>
+    <div class="dash-grid">
+      <div class="dcard">
+        <div class="dcard-t">BD_PC — Tipos de equipo <span style="font-size:11px;color:var(--muted);font-family:var(--mono);font-weight:400">${pcData.length} total</span></div>
+        ${tipos.map(t=>`<div class="bar-r"><div class="bar-l">${t}</div><div class="bar-t"><div class="bar-f" style="width:${Math.round((tipoCounts[t]||0)/maxT*100)}%;background:${tipoColors[t]}"></div></div><div class="bar-n">${tipoCounts[t]||0}</div></div>`).join('')}
+      </div>
+      <div class="dcard">
+        <div class="dcard-t">Licencias D365</div>
+        ${lic.length?lic.map(l=>{const tot=parseInt(l.total)||0,us=parseInt(l.usadas)||0,pct=tot?Math.round(us/tot*100):0;return`<div class="bar-r"><div class="bar-l" style="font-size:11px">${l.titulo.split(' ').slice(-2).join(' ')}</div><div class="bar-t"><div class="bar-f" style="width:${pct}%;background:${pct>=100?'var(--red)':pct>80?'var(--amber)':'var(--green)'}"></div></div><div class="bar-n">${us}/${tot}</div></div>`}).join(''):'<div style="color:var(--muted);font-size:13px">Sin datos</div>'}
+      </div>
+      <div class="dcard">
+        <div class="dcard-t">Últimos equipos añadidos</div>
+        <div class="act-list">
+          ${[...pcData].sort((a,b)=>b.id.localeCompare(a.id)).slice(0,5).map(r=>`<div class="act-r"><div class="act-ico">💻</div><div class="act-txt"><strong>${r.nombreEquipo||r.titulo}</strong><span>${r.titulo} · ${r.tipo||'—'} · ${r.marca||''} ${r.modelo||''}</span></div></div>`).join('')}
+        </div>
+      </div>
+      <div class="dcard">
+        <div class="dcard-t">Usuarios por departamento</div>
+        <div class="top-list">
+          ${topDept.length?topDept.map(([d,n])=>`<div class="top-r"><span>${d}</span><span>${n} usuarios</span></div>`).join(''):'<div style="color:var(--muted);font-size:13px">Sin datos de usuarios</div>'}
+        </div>
+        <div style="margin-top:12px">
+          <div class="dcard-t" style="margin-bottom:8px">Periféricos recientes</div>
+          <div class="act-list">${[...periData].slice(0,3).map(r=>`<div class="act-r"><div class="act-ico">🖱</div><div class="act-txt"><strong>${r.titulo}</strong><span>${r.tipo||'—'} · ${r.marca||''} ${r.modelo||''} → ${r.asignadoA||'—'}</span></div></div>`).join('')||'<div style="color:var(--muted);font-size:13px;padding:6px">Sin datos</div>'}</div>
+        </div>
+      </div>
+    </div>`;
+}
+
+// ═══════════════════════════════════════════════════════════
+// VIEW DETAIL
+// ═══════════════════════════════════════════════════════════
+function viewRec(id, listId) {
+  const cfg=LISTS[listId]; const r=DATA[listId].find(x=>x.id===id); if(!r||!cfg) return;
+  document.getElementById('d-t').textContent=r.titulo||r.id;
+  document.getElementById('d-s').innerHTML=`<span style="font-family:var(--mono);font-size:11px;color:var(--muted)">${cfg.name}</span>`;
+  const visFields=cfg.fields.filter(f=>r[f.key]);
+  document.getElementById('d-body').innerHTML=`
+    <div class="dgrid">
+      ${visFields.map(f=>`<div class="df ${f.full?'f3':f.bitlocker?'f2':''}">
+        <div class="df-k">${f.label}</div>
+        <div class="df-v" style="${f.mono||f.bitlocker?'font-family:var(--mono);font-size:12px;word-break:break-all':''}">
+          ${f.badge?`<span class="tipo-chip tipo-${(r[f.key]||'').replace(/\s/g,'-')}">${r[f.key]||'—'}</span>`:r[f.key]||'—'}
+        </div>
+      </div>`).join('')}
+    </div>`;
+  document.getElementById('d-edit-btn').onclick=()=>{cm('dmod');openEdit(id,listId)};
+  document.getElementById('dmod').classList.add('open');
+}
+
+// ═══════════════════════════════════════════════════════════
+// ADD / EDIT
+// ═══════════════════════════════════════════════════════════
+function openAdd() {
+  editId=null; editList=view;
+  const cfg=LISTS[view]; if(!cfg) return;
+  document.getElementById('m-t').textContent=`Nuevo registro — ${cfg.name}`;
+  document.getElementById('m-s').textContent=`Lista de SharePoint: ${cfg.spListName}`;
+  buildForm(cfg, null);
+  document.getElementById('modal').classList.add('open');
+}
+function openEdit(id, listId) {
+  editId=id; editList=listId;
+  const cfg=LISTS[listId]; const r=DATA[listId].find(x=>x.id===id); if(!r||!cfg) return;
+  document.getElementById('m-t').textContent=`Editar — ${r.titulo||id}`;
+  document.getElementById('m-s').textContent=`${cfg.name} · ${cfg.spListName}`;
+  buildForm(cfg, r);
+  document.getElementById('modal').classList.add('open');
+}
+function buildForm(cfg, r) {
+  const html=`<div class="fgrid">
+    ${cfg.fields.map(f=>`<div class="fg ${f.full?'full':''}">
+      <label class="fl">${f.label}${f.primary?' *':''}</label>
+      ${f.type==='note'?`<textarea class="fi" id="ff-${f.key}" placeholder="${f.label}">${r?r[f.key]||'':''}</textarea>`:
+        f.type==='choice'?`<select class="fi" id="ff-${f.key}"><option value="">— Selecciona —</option>${getChoiceOpts(cfg.id,f.key,r?r[f.key]:'')}</select>`:
+        `<input class="fi" id="ff-${f.key}" type="${f.type==='date'?'date':'text'}" value="${r?r[f.key]||'':''}" placeholder="${f.label}">`}
+    </div>`).join('')}
+  </div>`;
+  document.getElementById('m-body').innerHTML=html;
+}
+function getChoiceOpts(listId,key,cur) {
+  const allVals=[...new Set(DATA[listId].map(r=>r[key]).filter(Boolean))];
+  return allVals.map(v=>`<option ${v===cur?'selected':''}>${v}</option>`).join('');
+}
+function saveRec() {
+  const cfg=LISTS[editList]; if(!cfg) return;
+  const rec={};
+  cfg.fields.forEach(f=>{const el=document.getElementById('ff-'+f.key);rec[f.key]=el?el.value.trim():''});
+  if(!rec.titulo){toast('⚠ El nombre / título es obligatorio','warn');return}
+  if(editId) {
+    const i=DATA[editList].findIndex(r=>r.id===editId);
+    if(i>=0) DATA[editList][i]={...DATA[editList][i],...rec};
+    toast('✅ Registro actualizado','ok');
+  } else {
+    rec.id=Date.now().toString();
+    DATA[editList].unshift(rec);
+    toast('✅ Registro añadido','ok');
+  }
+  if(!SP.demo) saveToSP(editList,editId?DATA[editList].find(r=>r.id===editId):rec);
+  cm('modal'); refreshCounts(); render();
+}
+function delRec(id,listId) {
+  if(!confirm('¿Eliminar este registro?')) return;
+  const r=DATA[listId].find(x=>x.id===id);
+  DATA[listId]=DATA[listId].filter(x=>x.id!==id);
+  if(!SP.demo&&r?._spId) deleteFromSP(listId,r._spId);
+  refreshCounts(); render(); toast('🗑 Registro eliminado','ok');
+}
+
+// ═══════════════════════════════════════════════════════════
+// CONFIG
+// ═══════════════════════════════════════════════════════════
+function renderCfg() {
+  const cols_pc=['Title','Nombre del equipo','Tipo','Marca','Modelo','CPU','RAM','Nº de serie','Memoria Disco','Observaciones','Clave BITLOCKER','Modificado por IT','Fecha de compra'];
+  document.getElementById('content').innerHTML=`
+    <div class="ccard">
+      <h3>🔗 Conexión Microsoft Graph / SharePoint</h3>
+      <p>Modifica la configuración de conexión. Estas credenciales son las mismas que usa tu app de Power Apps.</p>
+      <div class="cg">
+        <div class="fg"><label class="fl">Tenant ID</label><input class="fi" id="c-t" value="${SP.tenantId}" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"></div>
+        <div class="fg"><label class="fl">Client ID</label><input class="fi" id="c-c" value="${SP.clientId}" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"></div>
+        <div class="fg"><label class="fl">URL del sitio SharePoint</label><input class="fi" id="c-s" value="${SP.siteUrl}" placeholder="https://contoso.sharepoint.com/sites/IT"></div>
+        <div class="fg"><label class="fl">Usuario conectado</label><input class="fi" value="${SP.user||'—'}" disabled></div>
+      </div>
+      <div style="margin-top:12px;display:flex;gap:8px">
+        <button class="btn pri" onclick="saveCfg()">💾 Guardar</button>
+        <button class="btn" onclick="demoMode()">Volver a demo</button>
+      </div>
+    </div>
+    <div class="ccard">
+      <h3>📋 Listas detectadas y mapeo de columnas</h3>
+      <p>La app conecta con estas listas de tu sitio SharePoint. Puedes añadir más en el código fuente en el objeto <code>LISTS</code>.</p>
+      <div style="overflow-x:auto"><table style="width:100%">
+        <thead><tr>
+          <th style="padding:7px 10px;font-size:10px;color:var(--muted);font-family:var(--mono);border-bottom:1px solid var(--border)">LISTA SP</th>
+          <th style="padding:7px 10px;font-size:10px;color:var(--muted);font-family:var(--mono);border-bottom:1px solid var(--border)">REGISTROS</th>
+          <th style="padding:7px 10px;font-size:10px;color:var(--muted);font-family:var(--mono);border-bottom:1px solid var(--border)">COLUMNAS MAPEADAS</th>
+        </tr></thead>
+        <tbody>
+          ${Object.values(LISTS).map(cfg=>`<tr>
+            <td style="padding:8px 10px;font-weight:600;font-size:13px">${cfg.icon} ${cfg.name}</td>
+            <td style="padding:8px 10px;font-family:var(--mono);font-size:12px;color:var(--sub)">${DATA[cfg.id]?.length||0}</td>
+            <td style="padding:8px 10px">${cfg.fields.map(f=>`<span class="ctag" style="margin:1px 2px">${f.spCol}</span>`).join('')}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table></div>
+    </div>
+    <div class="ccard">
+      <h3>📐 Columnas reales de BD_PC (de tu captura)</h3>
+      <p>Estas son las columnas exactas que se ven en tu lista de SharePoint BD_PC:</p>
+      <div style="display:flex;flex-wrap:wrap;gap:5px">${cols_pc.map(c=>`<span class="ctag">${c}</span>`).join('')}</div>
+      <p style="margin-top:10px;font-size:12px;color:var(--muted)">⚠ Los nombres internos en Graph API usan codificación URL para espacios y caracteres especiales (ej: <span class="ctag">Nombre_x0020_del_x0020_equipo</span>). Si alguna columna no carga, ve a Configuración de lista → columnas para ver el nombre interno exacto.</p>
+    </div>
+    <div class="ccard">
+      <h3>🔐 Reutilizar App Registration de Power Apps</h3>
+      <div class="step-r"><div class="step-n">1</div><div class="step-t">En <strong>portal.azure.com</strong> → Registros de aplicaciones, busca la app que usa Power Apps</div></div>
+      <div class="step-r"><div class="step-n">2</div><div class="step-t">Copia el <strong>Application (client) ID</strong> y el <strong>Directory (tenant) ID</strong></div></div>
+      <div class="step-r"><div class="step-n">3</div><div class="step-t">Añade un <strong>Redirect URI</strong> de tipo SPA apuntando a la URL donde alojarás esta app</div></div>
+      <div class="step-r"><div class="step-n">4</div><div class="step-t">Verifica que tiene el permiso delegado <span class="ctag">Sites.ReadWrite.All</span> con consentimiento de admin</div></div>
+      <div class="step-r"><div class="step-n">5</div><div class="step-t">Incluye <span class="ctag">@azure/msal-browser</span> e inicializa con esos IDs — el botón "Iniciar sesión con Microsoft" ya está configurado en el código</div></div>
+    </div>`;
+}
+function saveCfg(){
+  SP.tenantId=document.getElementById('c-t').value;
+  SP.clientId=document.getElementById('c-c').value;
+  SP.siteUrl=document.getElementById('c-s').value;
+  SP.demo=false;
+  document.getElementById('sp-led').className='sp-led on';
+  document.getElementById('sp-n').textContent='SharePoint';
+  document.getElementById('sp-u').textContent=SP.siteUrl.replace('https://','').slice(0,24)+'…';
+  loadAllLists(); toast('✅ Configuración guardada','ok');
+}
+
+// ═══════════════════════════════════════════════════════════
+// EXPORT CSV
+// ═══════════════════════════════════════════════════════════
+function exportCSV() {
+  const listId=view==='dash'||view==='cfg'?'pc':view;
+  const cfg=LISTS[listId]; const data=DATA[listId]; if(!data||!cfg) return;
+  const keys=cfg.fields.map(f=>f.key);
+  const hdr=cfg.fields.map(f=>f.label).join(',');
+  const rows=data.map(r=>keys.map(k=>`"${(r[k]||'').replace(/"/g,'""')}"`).join(','));
+  const csv=[hdr,...rows].join('\n');
+  const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download=`${cfg.name}-${new Date().toISOString().split('T')[0]}.csv`;a.click();URL.revokeObjectURL(url);
+  toast(`⬇ ${cfg.name}.csv exportado`,'ok');
+}
+
+// ═══════════════════════════════════════════════════════════
+// UTILS
+// ═══════════════════════════════════════════════════════════
+function refreshCounts() {
+  const total=Object.values(DATA).reduce((s,arr)=>s+arr.length,0);
+  document.getElementById('ct-total').textContent=total;
+  Object.keys(LISTS).forEach(k=>{
+    const el=document.getElementById('ct-'+k);
+    if(el) el.textContent=DATA[k]?.length||0;
+  });
+}
+function cm(id){document.getElementById(id).classList.remove('open')}
+function toast(msg,type=''){
+  const el=document.getElementById('toast');
+  el.className=`toast ${type} show`;el.textContent=msg;
+  clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove('show'),3200);
+}
+</script>
+</body>
+</html>
